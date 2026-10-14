@@ -3,8 +3,7 @@
 export const siteConfig = {
   name: "ProfilePilot",
   tagline: "Your real experience, presented at its best.",
-  // While true, a banner explains that accounts are not open yet and the
-  // sign-in/sign-up pages say so honestly. Set to false once Phase 2 ships.
+  // While true, a banner tells visitors the product is still being built.
   inDevelopment: true,
 } as const;
 

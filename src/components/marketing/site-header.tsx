@@ -8,7 +8,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/70">
       {siteConfig.inDevelopment && (
         <div className="border-b bg-muted/60 px-4 py-1.5 text-center text-xs text-muted-foreground">
-          ProfilePilot is in active development. Accounts are not open yet.
+          ProfilePilot is in active development. Profile building tools are being added step by step.
         </div>
       )}
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
