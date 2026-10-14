@@ -1,6 +1,6 @@
 // Which URLs need a signed-in user. Add new private sections here as they're
 // built (onboarding, resume, photo, profiles, settings…).
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding"];
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/resume"];
 const AUTH_PAGES = ["/sign-in", "/sign-up"];
 
 export const DEFAULT_SIGNED_IN_PATH = "/dashboard";

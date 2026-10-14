@@ -85,6 +85,54 @@ begin
     when others then
       raise exception 'FAIL: insert was not blocked by security rules (got: %)', sqlerrm;
   end;
+
+  -- 4. Resumes (added in migration 2) — skipped if not applied yet.
+  if to_regclass('public.resumes') is not null then
+    select count(*) into n from public.resumes;
+    if n <> 0 then
+      raise exception 'FAIL: another user can READ % resume record(s)', n;
+    end if;
+
+    select count(*) into n from storage.objects where bucket_id = 'resumes';
+    if n <> 0 then
+      raise exception 'FAIL: another user can SEE % resume file(s)', n;
+    end if;
+
+    begin
+      with removed as (
+        delete from public.resumes returning 1
+      ) select count(*) into n from removed;
+      raise exception using errcode = 'P0001', message = 'undo';
+    exception when sqlstate 'P0001' then null;
+    end;
+    if n <> 0 then
+      raise exception 'FAIL: another user can DELETE % resume record(s)', n;
+    end if;
+
+    begin
+      with removed as (
+        delete from storage.objects where bucket_id = 'resumes' returning 1
+      ) select count(*) into n from removed;
+      raise exception using errcode = 'P0001', message = 'undo';
+    exception when sqlstate 'P0001' then null;
+    end;
+    if n <> 0 then
+      raise exception 'FAIL: another user can DELETE % resume file(s)', n;
+    end if;
+
+    -- Put a file into someone else's folder.
+    begin
+      insert into storage.objects (bucket_id, name)
+      values ('resumes', '22222222-2222-2222-2222-222222222222/forged.pdf');
+      raise exception using errcode = 'P0002', message = 'forged';
+    exception
+      when insufficient_privilege then null;
+      when sqlstate 'P0002' then
+        raise exception 'FAIL: another user can UPLOAD into someone else''s folder';
+      when others then
+        raise exception 'FAIL: file upload was not blocked by security rules (got: %)', sqlerrm;
+    end;
+  end if;
 end $$;
 
-select 'PASS: a different signed-in user could not read, change, delete, or forge anyone else''s data.' as result;
+select 'PASS: a different signed-in user could not read, change, delete, or forge anyone else''s data or files.' as result;

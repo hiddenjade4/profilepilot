@@ -14,17 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/session";
 import { getMyQuestionnaire } from "@/lib/questionnaire/data";
+import { formatBytes } from "@/lib/resume/constants";
+import { getMyResume } from "@/lib/resume/data";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 // Steps that aren't built yet are shown as plain text with a "Coming soon"
 // badge — not as buttons — so nothing looks clickable that doesn't work.
 const upcoming: { icon: LucideIcon; title: string; body: string }[] = [
-  {
-    icon: FileTextIcon,
-    title: "Upload your resume",
-    body: "PDF or DOCX. You'll confirm every extracted fact.",
-  },
   {
     icon: ImageIcon,
     title: "Add a headshot",
@@ -52,6 +49,11 @@ export default function DashboardPage() {
           <li>
             <Suspense fallback={<div className="h-full min-h-32 animate-pulse rounded-2xl bg-muted" />}>
               <QuestionnaireCard />
+            </Suspense>
+          </li>
+          <li>
+            <Suspense fallback={<div className="h-full min-h-32 animate-pulse rounded-2xl bg-muted" />}>
+              <ResumeCard />
             </Suspense>
           </li>
           {upcoming.map((step) => (
@@ -144,6 +146,47 @@ async function QuestionnaireCard() {
           })}
         >
           {copy.action}
+          <ArrowRightIcon data-icon="inline-end" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+async function ResumeCard() {
+  const resume = await getMyResume();
+
+  return (
+    <div className="flex h-full gap-4 rounded-2xl border border-primary/30 bg-card p-5 shadow-xs">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        {resume ? (
+          <CheckCircle2Icon className="size-5" aria-hidden />
+        ) : (
+          <FileTextIcon className="size-5" aria-hidden />
+        )}
+      </span>
+      <div className="min-w-0 space-y-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-medium">Your resume</h3>
+            <Badge variant={resume ? "secondary" : "default"}>
+              {resume ? "Uploaded" : "Next"}
+            </Badge>
+          </div>
+          <p className="truncate text-sm text-muted-foreground">
+            {resume
+              ? `${resume.filename} · ${formatBytes(resume.sizeBytes)}`
+              : "Upload a PDF or Word file. You'll confirm every fact we read from it."}
+          </p>
+        </div>
+        <Link
+          href="/resume"
+          className={buttonVariants({
+            variant: resume ? "outline" : "default",
+            size: "lg",
+          })}
+        >
+          {resume ? "Manage resume" : "Upload resume"}
           <ArrowRightIcon data-icon="inline-end" />
         </Link>
       </div>
