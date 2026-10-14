@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import {
+  ArrowRightIcon,
   CheckCircle2Icon,
   FileTextIcon,
   ImageIcon,
@@ -9,18 +11,15 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/session";
+import { getMyQuestionnaire } from "@/lib/questionnaire/data";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 // Steps that aren't built yet are shown as plain text with a "Coming soon"
 // badge — not as buttons — so nothing looks clickable that doesn't work.
 const upcoming: { icon: LucideIcon; title: string; body: string }[] = [
-  {
-    icon: ListChecksIcon,
-    title: "Career questionnaire",
-    body: "Tell us the roles you want and how you'd like to come across.",
-  },
   {
     icon: FileTextIcon,
     title: "Upload your resume",
@@ -50,6 +49,11 @@ export default function DashboardPage() {
           Your next steps
         </h2>
         <ol className="grid gap-4 sm:grid-cols-2">
+          <li>
+            <Suspense fallback={<div className="h-full min-h-32 animate-pulse rounded-2xl bg-muted" />}>
+              <QuestionnaireCard />
+            </Suspense>
+          </li>
           {upcoming.map((step) => (
             <li
               key={step.title}
@@ -87,6 +91,62 @@ async function Greeting() {
       <p className="text-muted-foreground">
         Signed in as <span className="font-medium text-foreground">{user.email}</span>
       </p>
+    </div>
+  );
+}
+
+const questionnaireCopy = {
+  not_started: {
+    badge: "Start here",
+    body: "Tell us the roles you want and how you'd like to come across. About 3 minutes.",
+    action: "Start questionnaire",
+  },
+  in_progress: {
+    badge: "In progress",
+    body: "Your answers are saved. Pick up where you left off.",
+    action: "Continue",
+  },
+  completed: {
+    badge: "Done",
+    body: "Thanks! You can review or change your answers at any time.",
+    action: "Review answers",
+  },
+} as const;
+
+async function QuestionnaireCard() {
+  const { status } = await getMyQuestionnaire();
+  const copy = questionnaireCopy[status];
+
+  return (
+    <div className="flex h-full gap-4 rounded-2xl border border-primary/30 bg-card p-5 shadow-xs">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        {status === "completed" ? (
+          <CheckCircle2Icon className="size-5" aria-hidden />
+        ) : (
+          <ListChecksIcon className="size-5" aria-hidden />
+        )}
+      </span>
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-medium">Career questionnaire</h3>
+            <Badge variant={status === "completed" ? "secondary" : "default"}>
+              {copy.badge}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">{copy.body}</p>
+        </div>
+        <Link
+          href="/onboarding"
+          className={buttonVariants({
+            variant: status === "completed" ? "outline" : "default",
+            size: "lg",
+          })}
+        >
+          {copy.action}
+          <ArrowRightIcon data-icon="inline-end" />
+        </Link>
+      </div>
     </div>
   );
 }
