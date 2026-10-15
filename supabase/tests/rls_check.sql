@@ -109,12 +109,19 @@ begin
       raise exception 'FAIL: another user can DELETE % resume record(s)', n;
     end if;
 
+    -- Supabase also blocks *all* SQL deletes on storage.objects (files must
+    -- be deleted through the Storage API). If that guard fires, the delete
+    -- was refused, which is the outcome we want. The READ check above
+    -- already proved this user can't see any files, and Postgres only lets
+    -- a DELETE with a WHERE clause touch rows the user can see.
     begin
       with removed as (
         delete from storage.objects where bucket_id = 'resumes' returning 1
       ) select count(*) into n from removed;
       raise exception using errcode = 'P0001', message = 'undo';
-    exception when sqlstate 'P0001' then null;
+    exception
+      when sqlstate 'P0001' then null;
+      when insufficient_privilege then n := 0; -- refused: good
     end;
     if n <> 0 then
       raise exception 'FAIL: another user can DELETE % resume file(s)', n;

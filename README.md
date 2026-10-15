@@ -4,7 +4,7 @@ An AI-assisted LinkedIn profile builder. Users upload their resume, answer a sho
 
 **Core rule:** the AI improves how real experience is *presented*. It never invents jobs, titles, dates, degrees, certifications, or metrics. Facts from the user and AI suggestions are stored and displayed separately.
 
-> Status: **Phase 1 of 8** — project setup and landing page. See the roadmap below.
+> Status: **Phase 2 of 8 complete** — accounts, career questionnaire, and private resume upload. See the roadmap below.
 
 ## Tech stack
 
@@ -39,11 +39,18 @@ npm run dev                  # http://localhost:3000
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Regenerate route types, then run the TypeScript compiler |
 | `npm run check` | Lint + typecheck — run before every commit |
+| `npm test` | Unit tests (Vitest) |
+
+## Database
+
+SQL migrations live in `supabase/migrations/` and are applied in order through the Supabase SQL Editor.
+`supabase/tests/rls_check.sql` impersonates an unrelated user and verifies they cannot read, change, delete,
+or forge other users' data or files. It is safe to run against a live project.
 
 ## Roadmap
 
 - [x] **Phase 1** — Project setup, landing page, architecture
-- [ ] **Phase 2** — Authentication, questionnaire, resume upload
+- [x] **Phase 2** — Authentication, questionnaire, resume upload
 - [ ] **Phase 3** — Resume extraction and fact confirmation
 - [ ] **Phase 4** — AI profile generation
 - [ ] **Phase 5** — Editable preview, copy and export
